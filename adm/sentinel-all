@@ -1,0 +1,36 @@
+#! /bin/bash
+
+REDISHOME=/oss/redis
+CONFDIR=$REDISHOME/conf
+PATH=$REDISHOME/adm:$REDISHOME/bin:$PATH; export PATH
+
+usage () {
+        basename=`basename "$0"`
+        echo "USAGE: $basename {start|stop|status|restart}"
+}
+
+redis_all_ctl () {
+        all_redis=`ls $CONFDIR/sentinel-*|cut -d '-' -f 2|cut -d '.' -f 1`
+        for i in ${all_redis[@]}; do
+            sentinel $1 $i
+        done
+}
+
+case "$1" in
+    start)
+        redis_all_ctl $1
+        ;;
+    stop)
+        redis_all_ctl $1
+        ;;
+    status)
+        redis_all_ctl $1
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    *)
+        usage
+        ;;
+esac

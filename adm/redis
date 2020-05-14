@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# Simple Redis init.d script conceived to work on Linux systems
+# as it does use of the /proc filesystem.
+
+REDISPORT="${2-6515}"
+REDISHOME=/oss/redis
+EXEC=$REDISHOME/bin/redis-server
+CLIEXEC=$REDISHOME/bin/redis-cli
+CONF=$REDISHOME/conf/redis-${REDISPORT}.conf
+
+usage () {
+        basename=`basename "$0"`
+        echo "USAGE: $basename {start|stop|status|restart} [port<default:$REDISPORT>]"
+        echo " e.g.: $basename start $REDISPORT"
+        echo "       $basename status $REDISPORT"
+        echo "       $basename stop $REDISPORT"
+}
+
+roles () {
+        $CLIEXEC -p $REDISPORT -a "Change1me" info 2>/dev/null| egrep 'role|slave[0-9]|master_host|master_port'
+        echo "=========================================="
+}
+
+case "$1" in
+    start)
+        $EXEC $CONF
+        roles
+        ;;
+    stop)
+        echo "Stopping ..."
+        $CLIEXEC -p $REDISPORT -a "Change1me" shutdown save 2>/dev/null
+        ;;
+    status)
+        roles
+        ;;
+    restart)
+        $0 stop
+        $0 start
+        ;;
+    *)
+        usage
+        ;;
+esac
